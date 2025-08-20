@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+
+
+
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* hide scrollbar */
+.fi-sidbar-nav ::-webkit-scrollbar {
+    display: none;
+}
+
+-fi-sidebar-nav {
+    -ms-overflow-style: none;
+    scrollbar-width: none; /* Firefox */
+}
+/* style*/
+
+aside.fi-sidebar {
+   @apply bg-slate-800 ;
+}

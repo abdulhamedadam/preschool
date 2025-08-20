@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+/* hide scrollbar */
+.fi-sidbar-nav ::-webkit-scrollbar {
+    display: none;
+}
+
+-fi-sidebar-nav {
+    -ms-overflow-style: none;
+    scrollbar-width: none; /* Firefox */
+}
+/* style*/
+
+aside.fi-sidebar {
+   @apply bg-slate-800 ;
+}
