@@ -29,4 +29,11 @@ class Teacher extends Model
             'supervisor_id'
         );
     }
+
+    //------------------------------------------------
+    public function students()
+    {
+        return $this->hasMany(TeacherStudents::class,'teacher_id');
+    }
+
 }

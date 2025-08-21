@@ -124,6 +124,24 @@ return [
      'this_week'=>'هذا الاسبوع',
      'this_month'=>'هذا الشهر',
      'whatsapp'=>'واتساب',
+     'classrooms'=>'الفصول',
+     'total_students'=>'عدد الطلاب',
+     'total_teachers'=>'عدد المعلمين',
+     'total_classrooms'=>'عدد الفصول',
+     'expenses_items' => 'بنود المصروفات',
+     'expenses_item'=>'بند صرف',
+     'Expenses' => 'المصروفات',
+     'Financial' => 'المالية',
+     'Expense' => 'مصروف',
+     'ExpenseItem' => 'بند صرف',
+     'value' => 'القيمة',
+     'Date' => 'التاريخ',
+     'Notes' => 'ملاحظات',
+     'sanad_qabds' => 'سندات القبض',
+       'sanad_qabd' => ' سند قبض',
+
+     
+              
 
 
 

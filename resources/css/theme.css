@@ -1,7 +1,6 @@
-
 @import '/vendor/filament/filament/resources/css/theme.css';
  
-
+@config 'tailwind.config.js';
  
 .fi-sidebar-item-active > a { 
     @apply bg-indigo-500;
@@ -13,4 +12,4 @@
     &:hover {
         @apply bg-indigo-400;
     }
-}
+} 

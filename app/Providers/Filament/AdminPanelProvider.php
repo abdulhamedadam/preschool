@@ -29,9 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-              //  'primary' => '#512da8',
-                 'primary' => '#FF4438',
+                //  'primary' => '#512da8',
+                'primary' => '#FF4438',
             ])
+           
             ->sidebarFullyCollapsibleOnDesktop(true)
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
@@ -45,7 +46,13 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
+           
+            // ->plugin(
+            //     \Hasnayeen\Themes\ThemesPlugin::make()
+            //         ->registerTheme([MyCustomTheme::getName() => MyCustomTheme::class])
+            // )
             ->middleware([
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
