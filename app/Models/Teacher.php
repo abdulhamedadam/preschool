@@ -33,7 +33,23 @@ class Teacher extends Model
     //------------------------------------------------
     public function students()
     {
-        return $this->hasMany(TeacherStudents::class,'teacher_id');
+        return $this->hasMany(TeacherStudents::class, 'teacher_id');
     }
 
+
+    public function classRoom()
+    {
+        return $this->hasOne(ClassRoom::class, 'teacher_id');
+    }
+
+
+        public function salaries()
+    {
+        return $this->morphMany(Salary::class, 'model');
+    }
+
+    public function getCurrentSalaryAttribute()
+    {
+        return $this->salaries()->latest()->first()?->amount ?? 0;
+    }
 }

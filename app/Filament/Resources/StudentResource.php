@@ -15,6 +15,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -41,11 +42,47 @@ class StudentResource extends Resource
 
                         Select::make('level_id')
                             ->label(__('common.level'))
-                            ->options(Level::query()
-                                ->pluck('name', 'id'))
+                            ->options(Level::pluck('name', 'id'))
                             ->searchable()
                             ->preload()
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                if ($state) {
+                                    $level = \App\Models\Level::find($state);
+                                    $set('term_expenses', $level?->term_expenses ?? 0);
+                                    // تحديث التوتال مباشرة
+                                    $set('total_expenses', ($level?->term_expenses ?? 0) + ($get('has_transport') ? 50 : 0));
+                                } else {
+                                    $set('term_expenses', 0);
+                                    $set('total_expenses', ($get('has_transport') ? 50 : 0));
+                                }
+                            }),
+
+                        TextInput::make('term_expenses')
+                            ->label(__('common.term_expenses'))
+                            ->numeric()
+                            ->disabled()
+                            ->default(0)
+                            ->dehydrated(true),
+
+                        Toggle::make('has_transport')
+                            ->label(__('common.has_transport'))
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                $set('total_expenses', ($get('term_expenses') ?? 0) + ($state ? 50 : 0));
+                            }),
+
+                        TextInput::make('total_expenses')
+                            ->label(__('common.total_expenses'))
+                            ->numeric()
+                            ->disabled()
+                            ->reactive()
+                            ->afterStateHydrated(function ($state, callable $set, $get) {
+                                $set('total_expenses', ($get('term_expenses') ?? 0) + ($get('has_transport') ? 50 : 0));
+                            })
+                            ->dehydrated(true),
+
+
 
                         DatePicker::make('date_of_birth')
                             ->label(__('common.date_of_birth'))
@@ -171,6 +208,10 @@ class StudentResource extends Resource
                     ->label(__('common.teacher'))
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('total_expenses')
+                    ->label(__('common.total_expenses'))
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('common.created_at'))
                     ->dateTime('d M Y H:i')
@@ -273,9 +314,4 @@ class StudentResource extends Resource
     {
         return static::getModel()::count();
     }
-
-
-    
-
-
 }

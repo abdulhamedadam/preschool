@@ -25,4 +25,15 @@ class Supervisor extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+
+     public function salaries()
+    {
+        return $this->morphMany(Salary::class, 'model');
+    }
+
+    public function getCurrentSalaryAttribute()
+    {
+        return $this->salaries()->latest()->first()?->amount ?? 0;
+    }
 }

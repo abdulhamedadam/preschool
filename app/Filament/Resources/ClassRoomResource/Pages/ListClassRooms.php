@@ -13,6 +13,7 @@ class ListClassRooms extends ListRecords
      protected static string $view = 'filament.class_rooms.index';
 
      public $class_rooms;
+     
 
 
      public function mount(): void

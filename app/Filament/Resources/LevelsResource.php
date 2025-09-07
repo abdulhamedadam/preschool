@@ -33,9 +33,16 @@ class LevelsResource extends Resource
                         ->label(__('common.Name'))
                         ->required(),
 
+                    Forms\Components\TextInput::make('term_expenses')
+                        ->label(__('common.term_expenses'))
+                        ->numeric()
+                        ->required(),
+
                     Textarea::make('description')
                         ->label(__('common.Description'))
                         ->columnSpanFull(),
+
+
                 ]),
             ]);
     }
@@ -45,6 +52,7 @@ class LevelsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('term_expenses'),
                 Tables\Columns\TextColumn::make('description'),
             ])
             ->filters([
@@ -98,7 +106,7 @@ class LevelsResource extends Resource
         return __('common.Levels');
     }
 
-      public static function getNavigationBadge(): ?string
+    public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
     }

@@ -80,44 +80,40 @@
                             </div>
 
                             @if(optional($class_room->teacher)->students->count() > 0)
-                            <div class="students-grid">
-                                @foreach($class_room->teacher->students->take(9) as $student)
-                                <div class="student-card" data-student-id="{{ $student->id }}" data-student-name="{{ $student->student->name }}">
-                                    <div class="student-options">
-                                        <button class="options-btn" onclick="toggleOptionsMenu(event, {{ $student->id }})">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                            </svg>
-                                        </button>
-                                        <div class="options-menu" id="options-menu-{{ $student->id }}">
-                                            <button onclick="showMoveClassModal({{ $student->id }}, '{{ $student->student->name }}')">
+                            <div class="students-container">
+                                <div class="students-grid">
+                                    @foreach($class_room->teacher->students as $student)
+                                    <div class="student-card" data-student-id="{{ $student->id }}" data-student-name="{{ optional($student->student)->name }}">
+                                        <div class="student-options">
+                                            <button class="options-btn" onclick="toggleOptionsMenu(event, {{ $student->id }})">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                                 </svg>
-                                                نقل إلى فصل آخر
                                             </button>
-                                            <button onclick="showStudentDetails({{ $student->id }}, '{{ $student->student->name }}')">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                عرض التفاصيل
-                                            </button>
+                                            <div class="options-menu" id="options-menu-{{ $student->id }}">
+                                                <button onclick="showMoveClassModal({{ $student->id }}, '{{ @$student->student->name }}')">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                                    </svg>
+                                                    نقل إلى فصل آخر
+                                                </button>
+                                                <button onclick="showStudentDetails({{ $student->id }}, '{{ @$student->student->name }}')">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    عرض التفاصيل
+                                                </button>
+                                            </div>
                                         </div>
+                                        <div class="student-avatar" style="background: {{ ['#e74c3c','#3498db','#27ae60','#f39c12','#8e44ad','#16a085'][array_rand(['#e74c3c','#3498db','#27ae60','#f39c12','#8e44ad','#16a085'])] }};">
+                                            {{ mb_substr($student->student->name ?? 'ط', 0, 1) }}
+                                        </div>
+                                        <span class="student-name">
+                                            {{ @$student->student->name }}
+                                        </span>
                                     </div>
-                                    <div class="student-avatar" style="background: {{ ['#e74c3c','#3498db','#27ae60','#f39c12','#8e44ad','#16a085'][array_rand(['#e74c3c','#3498db','#27ae60','#f39c12','#8e44ad','#16a085'])] }};">
-                                        {{ mb_substr($student->student->name ?? 'ط', 0, 1) }}
-                                    </div>
-                                    <span class="student-name">
-                                        {{ $student->student->name }}
-                                    </span>
+                                    @endforeach
                                 </div>
-                                @endforeach
-
-                                @if($class_room->teacher->students->count() > 9)
-                                <div class="more-students">
-                                    +{{ $class_room->teacher->students->count() - 9 }} المزيد
-                                </div>
-                                @endif
                             </div>
                             @else
                             <div class="no-students">
@@ -173,7 +169,7 @@
         @endif
     </div>
 
-    <!-- Move Class Modal (Hidden by default) -->
+
     <div id="moveClassModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -186,10 +182,11 @@
                     <label for="classSelect">اختر الفصل الوجهة:</label>
                     <select id="classSelect" class="form-select">
                         <option value="">-- اختر الفصل --</option>
-                        <option value="1">الصف الأول الابتدائي</option>
-                        <option value="2">الصف الثاني الابتدائي</option>
-                        <option value="3">الصف الثالث الابتدائي</option>
-                        <option value="4">الصف الرابع الابتدائي</option>
+                        @foreach ($class_rooms as $class)
+                        <!-- @if ($class->id != $class_room->id) -->
+                        <option value="{{ $class->id }}">{{ $class->name }}</option>
+                        <!-- @endif -->
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -314,12 +311,38 @@
             backdrop-filter: blur(10px);
         }
 
-        /* شبكة الطلاب */
+        /* Students Container with Scroll */
+        .students-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding-right: 5px;
+        }
+
+        /* Scrollbar styling */
+        .students-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .students-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .students-container::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
+
+        .students-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* شبكة الطلاب - 2 في الصف */
         .students-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 0.75rem;
-            margin-bottom: 1rem;
         }
 
         .student-card {
@@ -372,20 +395,6 @@
             font-weight: 500;
             background: #d6eaff;
             color: #0056b3;
-        }
-
-        .more-students {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-weight: 500;
-            background: #f0f0f0;
-            height: 80px;
-            grid-column: span 3;
         }
 
         .no-students {
@@ -620,41 +629,45 @@
                 color: #e5e7eb;
             }
 
-            .more-students {
+            .students-container::-webkit-scrollbar-track {
                 background: #374151;
-                color: #9ca3af;
             }
-            
+
+            .students-container::-webkit-scrollbar-thumb {
+                background: #6b7280;
+            }
+
             .options-btn {
                 background: rgba(55, 65, 81, 0.8);
                 color: #e5e7eb;
             }
-            
+
             .options-menu {
                 background: #1f2937;
                 color: #e5e7eb;
             }
-            
+
             .options-menu button:hover {
                 background: #374151;
             }
-            
+
             .modal-content {
                 background: #1f2937;
                 color: #e5e7eb;
             }
-            
+
             .modal-title {
                 color: #e5e7eb;
             }
-            
+
             .form-select {
                 background: #374151;
                 color: #e5e7eb;
                 border-color: #4b5563;
             }
-            
-            .detail-label, .detail-value {
+
+            .detail-label,
+            .detail-value {
                 color: #e5e7eb;
             }
         }
@@ -664,7 +677,7 @@
         // Global variables to store current student info
         let currentStudentId = null;
         let currentStudentName = null;
-        
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Close options menus when clicking elsewhere
@@ -677,11 +690,11 @@
                 }
             });
         });
-        
+
         // Toggle options menu for a student
         function toggleOptionsMenu(event, studentId) {
             event.stopPropagation();
-            
+
             // Hide all other menus
             const menus = document.querySelectorAll('.options-menu');
             menus.forEach(menu => {
@@ -689,49 +702,49 @@
                     menu.style.display = 'none';
                 }
             });
-            
+
             // Toggle current menu
             const menu = document.getElementById(`options-menu-${studentId}`);
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            
+
             // Store student info
             const studentCard = event.target.closest('.student-card');
             currentStudentId = studentId;
             currentStudentName = studentCard.getAttribute('data-student-name');
         }
-        
+
         // Show move class modal
         function showMoveClassModal(studentId, studentName) {
             // Hide options menu
             const menu = document.getElementById(`options-menu-${studentId}`);
             menu.style.display = 'none';
-            
+
             // Set student info
             currentStudentId = studentId;
             currentStudentName = studentName;
-            
+
             // Show modal
             const modal = document.getElementById('moveClassModal');
             document.getElementById('studentName').textContent = currentStudentName;
             modal.style.display = 'flex';
         }
-        
+
         // Show student details modal
         function showStudentDetails(studentId, studentName) {
             // Hide options menu
             const menu = document.getElementById(`options-menu-${studentId}`);
             menu.style.display = 'none';
-            
+
             // Set student info
             currentStudentId = studentId;
             currentStudentName = studentName;
-            
+
             // Show modal
             const modal = document.getElementById('studentDetailsModal');
             document.getElementById('detail-name').textContent = currentStudentName;
             modal.style.display = 'flex';
         }
-        
+
         // Close modal
         function closeModal() {
             const modals = document.querySelectorAll('.modal');
@@ -739,17 +752,17 @@
                 modal.style.display = 'none';
             });
         }
-        
+
         // Confirm move action
         function confirmMove() {
             const classSelect = document.getElementById('classSelect');
             const selectedClass = classSelect.value;
-            
+
             if (!selectedClass) {
                 alert('يرجى اختيار فصل');
                 return;
             }
-            
+
             // Here you would typically make an AJAX request to move the student
             alert(`تم نقل الطالب ${currentStudentName} إلى الفصل المحدد`);
             closeModal();

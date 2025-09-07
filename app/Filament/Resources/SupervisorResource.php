@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SupervisorResource\Pages;
 use App\Filament\Resources\SupervisorResource\RelationManagers;
+use App\Filament\Resources\SupervisorResource\RelationManagers\SalariesRelationManager;
 use App\Models\Supervisor;
 use App\Models\SupervisorTeachers;
 use Filament\Forms;
@@ -13,13 +14,16 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SupervisorResource extends Resource
 {
@@ -90,7 +94,6 @@ class SupervisorResource extends Resource
                             ->default(1)
                             ->required(),
 
-
                         Select::make('teacher_ids')
                             ->label(__('common.teachers'))
                             ->multiple()
@@ -98,7 +101,7 @@ class SupervisorResource extends Resource
                             ->preload()
                             ->searchable()
                             ->columnSpanFull()
-                              ->rules(['array', 'max:4']),
+                            ->rules(['array', 'max:4']),
 
                         Textarea::make('notes')
                             ->label(__('common.notes'))
@@ -121,6 +124,12 @@ class SupervisorResource extends Resource
                 TextColumn::make('phone')
                     ->label(__('common.phone'))
                     ->searchable(),
+
+                TextColumn::make('current_salary')
+                    ->label(__('common.current_salary'))
+                  
+                    ->sortable()
+                    ->getStateUsing(fn(Supervisor $record) => $record->current_salary),
 
                 TextColumn::make('country.name')
                     ->label(__('common.country'))
@@ -164,7 +173,8 @@ class SupervisorResource extends Resource
                                 fn(Builder $query, $date): Builder => $query->whereDate('hire_date', '>=', $date),
                             );
                     }),
-            ])->headerActions([
+            ])
+            ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label(__('common.add_supervisor'))
                     ->modalHeading(__('common.add_supervisor'))
@@ -173,15 +183,80 @@ class SupervisorResource extends Resource
                         $teacherIds = $data['teacher_ids'] ?? [];
                         unset($data['teacher_ids']);
 
-                        $supervisor = \App\Models\Supervisor::create($data);
-
+                        $supervisor = Supervisor::create($data);
                         $supervisor->teachers()->sync($teacherIds);
 
                         return $supervisor;
                     })
-
             ])
             ->actions([
+                // Add/Update Salary Action
+                Tables\Actions\Action::make('add_update_salary')
+                    ->label(__('common.manage_salary'))
+                    ->icon('heroicon-o-currency-dollar')
+                    ->iconButton()
+                    ->form([
+                        Forms\Components\TextInput::make('amount')
+                            ->label(__('common.salary_amount'))
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->step(0.01),
+                        
+                       
+                     
+                        Forms\Components\Textarea::make('notes')
+                            ->label(__('common.notes'))
+                            ->maxLength(500),
+                    ])
+                    ->fillForm(function (Supervisor $record) {
+                        // Get current month's salary if exists
+                        $currentMonthSalary = $record->salaries()
+                            ->whereYear('created_at', now()->year)
+                            ->whereMonth('created_at', now()->month)
+                            ->first();
+
+                        return [
+                            'amount' => $currentMonthSalary?->amount,
+                            'effective_date' => $currentMonthSalary ? $currentMonthSalary->created_at : now(),
+                            'notes' => $currentMonthSalary?->notes,
+                        ];
+                    })
+                    ->action(function (Supervisor $record, array $data): void {
+                        $effectiveDate = Carbon::parse($data['effective_date']);
+                        
+                        // Check if salary exists for this month
+                        $existingSalary = $record->salaries()
+                            ->whereYear('created_at', $effectiveDate->year)
+                            ->whereMonth('created_at', $effectiveDate->month)
+                            ->first();
+
+                        if ($existingSalary) {
+                            // Update existing salary
+                            $existingSalary->update([
+                                'amount' => $data['amount'],
+                                'notes' => $data['notes'] ?? null,
+                            ]);
+                            
+                            $message = __('common.salary_updated_success');
+                        } else {
+                            // Create new salary record
+                            $record->salaries()->create([
+                                'amount' => $data['amount'],
+                                'notes' => $data['notes'] ?? null,
+                                'created_at' => $data['effective_date'],
+                            ]);
+                            
+                            $message = __('common.salary_added_success');
+                        }
+                        
+                        // Show success notification
+                        Notification::make()
+                            ->title($message)
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make()
                     ->iconButton()
                     ->fillForm(function (Supervisor $record) {
@@ -210,6 +285,7 @@ class SupervisorResource extends Resource
 
                 Tables\Actions\ViewAction::make()
                     ->iconButton(),
+                    
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
@@ -222,6 +298,13 @@ class SupervisorResource extends Resource
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            SalariesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
@@ -260,6 +343,4 @@ class SupervisorResource extends Resource
     {
         return static::getModel()::count();
     }
-
-
 }
